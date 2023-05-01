@@ -1,62 +1,68 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 public class Cat : MonoBehaviour
 {
-    // Bullet의 transform 추적해서 파괴 
+    public GameObject buil;
 
-    [SerializeField]
-    private Transform bulletTransform;
+    GameObject[] gos;
+    GameObject closest = null;
 
-    private Stack<GameObject> bulletStack = new Stack<GameObject>();
+    Transform closestTrans;
+    Rigidbody2D rigid;
 
+    private void Awake()
+    {
+        rigid = GetComponent<Rigidbody2D>();
+
+    }
 
     private void Start()
     {
-        StartCoroutine(FindBullet());
+
     }
 
-    private IEnumerator FindBullet()
+    void Update()
     {
-        bulletTransform.position = transform.position;
+        FindClosestEnemy();
 
-
-        yield return null;
+        Move();
     }
 
-    private void LookForTargets()
+    private void Move()
     {
-        float targetMaxRadius = 20f;
-        Collider2D[] collider2DArray = Physics2D.OverlapCircleAll(transform.position, targetMaxRadius);
-
-        foreach (Collider2D collider2D in collider2DArray)
+        if (closest != null)
         {
-            Building building = collider2D.GetComponent<Building>();
-            if (building != null)
+            Vector3 moveDir = (closest.transform.position - transform.position).normalized;
+            float moveSpeed = 10f;
+
+            rigid.velocity = moveDir * moveSpeed;
+        }
+        else
+        {
+            rigid.velocity = Vector2.zero;
+        }
+    }
+
+    GameObject FindClosestEnemy()
+    {
+        gos = GameObject.FindGameObjectsWithTag("Enemy");
+        float distance = Mathf.Infinity;
+        Vector3 position = transform.position;
+        foreach (GameObject go in gos)
+        {
+            Vector3 diff = go.transform.position - position;
+            float curDistance = diff.sqrMagnitude;
+            if (curDistance < distance)
             {
-                if (bulletTransform == null)
-                {
-                    bulletTransform = building.transform;
-                }
-                else
-                {
-                    if (Vector3.Distance(transform.position, building.transform.position) <
-                        Vector3.Distance(transform.position, bulletTransform.position))
-                    {
-                        bulletTransform = building.transform;
-                    }
-                }
+                closest = go;
+                distance = curDistance;
             }
         }
-
-        if (bulletTransform == null)
-        {
-            if (BuildingManager.Instance.GetHqBuilding() != null)
-            {
-                bulletTransform = BuildingManager.Instance.GetHqBuilding().transform;
-            }
-
-        }
+        return closest;
     }
 }
+

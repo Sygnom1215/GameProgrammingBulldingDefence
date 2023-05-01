@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour
     private Transform targetTransform;
     private Rigidbody2D enemyRigidbody2D;
     private HealthSystem healthSystem;
+    private CircleCollider2D collider;
 
     private float lookForTargetTimer;
     private float lookForTargetTimerMax = .2f;
@@ -23,6 +24,7 @@ public class Enemy : MonoBehaviour
     private void Awake()
     {
         enemyRigidbody2D = GetComponent<Rigidbody2D>();
+        collider = GetComponent<CircleCollider2D>();
     }
 
     private void Start()
@@ -94,6 +96,11 @@ public class Enemy : MonoBehaviour
             HealthSystem healthSystem = building.GetComponent<HealthSystem>();
             healthSystem.Damage(10);
             this.healthSystem.Damage(999);
+        }
+
+        if (collision.gameObject.CompareTag("Cat"))
+        {
+            Destroy(this.gameObject);
         }
     }
 
